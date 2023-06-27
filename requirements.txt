@@ -1,0 +1,9 @@
+pandas
+openpyxl
+xlrd
+chardet
+streamlit
+folium
+streamlit_folium
+geojson
+plotly
