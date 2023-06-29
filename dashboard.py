@@ -28,7 +28,7 @@ def main():
     st.title("Tableau de Bord Prix Immobiliers")
     bcn_map_html = get_golden_map()
     with st.container():
-        st.subheader("Prix Immobiliers par Commune en 2022")
+        st.subheader("Prix Immobiliers par Commune en 2021")
         components.html(bcn_map_html,width=1000, height=500)
 
     st.subheader("Analyse par Année")
