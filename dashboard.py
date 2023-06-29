@@ -10,44 +10,8 @@ st.set_page_config(layout = 'wide')
 
 @st.cache_data
 def load_data():
-    data = pd.read_csv("TGV.csv", sep=";")
+    data = pd.read_csv("immo/TGV.csv", sep=";")
     return data
-
-
-def map_call():
-    ''' Création d'une carte interactive territorialisée à l'échelle de la commune '''
-    df = data[data["Annee"] == 2021]
-    df = df[["Code INSEE" ,"Commune", "Prixm2Moyen", "SurfaceMoy", "Nb_mutations", "TGV"]].dropna(subset=["SurfaceMoy", "Nb_mutations"])
-    df.drop_duplicates(subset=["Code INSEE"], inplace=True)
-
-    paris = folium.Map(location = [46.8534, 2.3488], zoom_start=6, min_zoom=4, tiles = "https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png",
-            attr = '&copy; OpenStreetMap France | &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors')
-
-    choropleth = folium.Choropleth(
-    geo_data= "modified_communes.geojson",
-    name="choropleth",
-    data= df,
-    columns=["Code INSEE", "Prixm2Moyen"],
-    key_on="feature.properties.code",
-    fill_color="YlOrRd",
-    fill_opacity=0.7,
-    line_opacity=0.5,
-    highlight = True,
-    legend_name="Engagement par département",
-    )
-    choropleth.geojson.add_to(paris)
-
-    result_indexed = df.set_index('Code INSEE')
-
-    for feature in choropleth.geojson.data['features']:
-        Communes = feature['properties']['code']
-        feature['properties']['Prixm2Moyen'] = '{:,.0f} €'.format(result_indexed.loc[Communes, 'Prixm2Moyen']).replace(',', ' ') if Communes in list(result_indexed.index) else 'Aucune données disponibles'
-        feature['properties']['Nb_mutations'] = format(result_indexed.loc[Communes, 'Nb_mutations']) if Communes in list(result_indexed.index) else 'Aucune données disponibles'
-        feature['properties']['SurfaceMoy'] = '{:,.0f} m2'.format(result_indexed.loc[Communes, 'SurfaceMoy']) if Communes in list(result_indexed.index) else 'Aucune données disponibles'
-        
-
-    folium.GeoJsonTooltip(['nom', "Prixm2Moyen", 'SurfaceMoy', 'Nb_mutations', "TGV"]).add_to(choropleth.geojson)  
-    folium_static(paris,width=1000, height= 500)
 
 
 @st.cache_data()
