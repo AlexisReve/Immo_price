@@ -7,3 +7,7 @@ folium
 streamlit_folium
 geojson
 plotly
+scikit-learn
+matplotlib
+seaborn
+xgboost
