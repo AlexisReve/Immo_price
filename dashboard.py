@@ -7,6 +7,9 @@ import folium
 import streamlit.components.v1 as components
 import plotly.express as px
 import pickle
+import seaborn as sns
+import matplotlib.pyplot as plt
+
 
 st.set_page_config(layout = 'wide')
 
@@ -37,7 +40,7 @@ def main():
     with st.container():
         year = st.selectbox("Année", data["Annee"].unique().tolist())
 
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
     data_filtered = data.copy()
     data_filtered = data_filtered[data_filtered["Annee"]==year]
     with col1:
@@ -60,6 +63,11 @@ def main():
         table["Somme"] = table.sum(axis=1, skipna=True, numeric_only=True)
         fig = px.pie(table, values='Somme', names=table.index)
         st.plotly_chart(fig, use_container_width=True)
+
+    with col3:
+        table = data_filtered.groupby('TGV')["Prixm2Moyen", "SurfaceMoy"].mean()
+        table = table.round(0).astype(str)
+        st.table(table)
     
     st.subheader("Prédisez votre prix :")
     
@@ -76,7 +84,37 @@ def main():
             à un niveau de granularité suffisant permettant de valoriser ces données et d'encourager les initiatives
             citoyennes .'''
     st.info(text)
-    st.info("")
+
+    expl = '''Le modèle utilisé est un classifier XGBOOST. Notre variable cible est l'intervalle de prix que nous
+            avons construit à partir des quartiles de la distribution de la variable Prixm2Moyen. Ci-dessous sont
+            représentées quelques statistiques. Observons que la surface moyenne des biens immobiliers ayant fait
+            l'objet d'une transaction diminue avec la croissance du prix. Toutefois, cette relation se semble pas
+            significative à la vue des corrélations. Seule semble se dessiner une relation négative entre la
+            présence d'une gare non TGV et la croissance du Prix au m2. '''
+    st.info(expl)
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        table = data[["ClassePrix"]]
+        table = table.apply(pd.Series.value_counts)
+        table["Somme"] = table.sum(axis=1, skipna=True, numeric_only=True)
+        fig = px.pie(table, values='Somme', names=table.index)
+        st.plotly_chart(fig, use_container_width=True)
+    with col2:
+        table = data_filtered.groupby('ClassePrix')["Prixm2Moyen", "SurfaceMoy", "Nb_mutations"].mean()
+        table = table.round(0).astype(str)
+        st.table(table)
+    with col3:
+        data['PasGare'] = data['TGV'].apply(lambda x: 1 if x == 'Pas de gare' else 0)
+        data['GareNonTGV'] = data['TGV'].apply(lambda x: 1 if x == 'Gare voyageurs non TGV' else 0)
+        data['Gare TGV'] = data['TGV'].apply(lambda x: 1 if x == 'Gare TGV' else 0)
+        table = data[["ClassePrix", "SurfaceMoy", "Nb_mutations", 'PasGare', "GareNonTGV", "Gare TGV"]]
+        correlation_matrix = table.corr()
+        plt.figure(figsize=(8, 6))
+        sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', vmin=-1, vmax=1)
+        plt.xticks(rotation=45)
+        plt.yticks(rotation=0)
+        st.pyplot(plt)
+
     with st.form(key = 'my_form'):
         with st.container():
             col3, col4, col5, col6 = st.columns(4)
@@ -109,6 +147,7 @@ def main():
         input_gare_voyageur = 1 if Input_gare == "Gare voyageurs non TGV" else 0
         new_data = input + [input_pas_gare, input_gare_voyageur, input_tgv]
         new_data = np.reshape(new_data, (1,-1))
+        st.write(new_data)
         predictions = pd.DataFrame(model.predict_proba(new_data)).rename(columns = {0 : "[0:1107]",
                                                                                     1 : "[1108 : 1451]",
                                                                                     2 : "[1452 : 1922]",
