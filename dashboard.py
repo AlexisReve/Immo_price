@@ -70,11 +70,11 @@ def main():
             prix au m2 par commune est calculé sur un faible nombre de transactions immobilières. Les bases Demandes de
             valeurs foncières ne sont pas suffisantes pour le cas d'usage de prédiction de prix. Celles-ci doivent être
             enrichies d'autres données telles que des indicateurs de qualité de vie (nombre de délits, accès aux soins) ou
-            des indicateurs d'activité (taux de chômage, nombre d'entreprise). Si un premier travail de fusion de plusieurs
-            bases de données (listes gares sncf, taux de chômage par commune) a été effectué par nos soins, nous restons
+            des indicateurs d'activité (taux de chômage, nombre d'entreprise). Nous restons
             tributaires de la disponibilité et de la qualité des données. Nous encourageons donc l'ensemble des acteurs
             publiques et privés à travailler en étroite collaboration afin de mettre à disposition de nouvelles données
-            au citoyen.'''
+            à un niveau de granularité suffisant permettant de valoriser ces données et d'encourager les initiatives
+            citoyennes .'''
     st.info(text)
     st.info("")
     with st.form(key = 'my_form'):
